@@ -4,6 +4,13 @@
 
 #define MAXSTR 12
 
+int number(char* str) {
+  for(int i = 0; *(str+i) != '\0'; i++) {
+    if (!(*(str+i) >= '0' && *(str+i) <= '9')) return -1;
+  }
+  return atoi(str);
+}
+
 void readEOL(FILE* f) {
   char buff;
   do {
@@ -38,18 +45,44 @@ char* convertBW(char* r, char* g, char* b, int thresh, int maxRgb) {
   return str;
 }
 
-int main(int agrc, char* argv[]) {
-  int thresh = atoi(*(argv+1));
-
+int main(int argc, char* argv[]) {
+  int thresh;
   FILE* imgIn; FILE* imgOut;
 
-  imgIn = fopen(*(argv+2), "r"); imgOut = fopen(*(argv+3), "w");
-  if (imgIn == NULL) {
-    fprintf(imgOut,"Ficheiro não encontrado: %s", *(argv+2));
+  if (argc > 4) {
+    printf("Uso indevido: %s <limite> [<ficheiro de entrada> [ficheiro de saida]]\n", *argv);
     return 0;
   }
 
+  if (argc > 3) {
+    imgOut = fopen(*(argv+3), "w");
+    if (imgOut == NULL) {
+      printf("Impossivel abrir o ficheiro para escrita: %s\n", *(argv+3));
+      return 0;
+    }
+  }
+  else imgOut = stdout;
 
+  if (argc > 2) {
+    imgIn = fopen(*(argv+2), "r");
+    if (imgIn == NULL) {
+      printf("Ficheiro não encontrado: %s\n", *(argv+2));
+      return 0;
+    }
+  }
+  else imgIn = stdin;
+
+  if (argc > 1) {
+    int thresh = number(*(argv+1));
+    if (thresh == -1) {
+        printf("Uso indevido: %s <limite> [<ficheiro de entrada> [ficheiro de saida]]\n", *argv);
+        return 0;
+    }
+  }
+  else {
+    printf("Uso indevido: %s <limite> [<ficheiro de entrada> [ficheiro de saida]]\n", *argv);
+    return 0;
+  }
   char* rgb = getString(imgIn);
   fprintf(imgOut, "%s\n", rgb);
   free(rgb);

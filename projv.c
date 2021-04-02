@@ -21,20 +21,38 @@ char* getString(FILE* f) {
   return buff;
 }
 
-int main(int agrc, char* argv[]) {
+int main(int argc, char* argv[]) {
   FILE* imgIn; FILE* imgOut;
 
-  imgIn = fopen(*(argv+1), "r"); imgOut = fopen(*(argv+2), "w");
-  if (imgIn == NULL) {
-    fprintf(imgOut,"Ficheiro não encontrado: %s", *(argv+1));
+  if (argc > 3) {
+    printf("Uso indevido: %s [<ficheiro de entrada> [ficheiro de saida]]\n", *argv);
     return 0;
   }
+
+  if (argc > 2) {
+    imgOut = fopen(*(argv+2), "w");
+    if (imgOut == NULL) {
+      printf("Impossivel abrir o ficheiro para escrita: %s\n", *(argv+2));
+      return 0;
+    }
+  }
+  else imgOut = stdout;
+
+  if (argc > 1) {
+    imgIn = fopen(*(argv+1), "r");
+    if (imgIn == NULL) {
+      printf("Ficheiro não encontrado: %s", *(argv+1));
+      return 0;
+    }
+  }
+  else imgIn = stdin;
+
 
   char* rgb = getString(imgIn);
   fprintf(imgOut, "%s\n", rgb);
   free(rgb);
 
-  char* Scol = getString(imgIn);
+  char* Scol = getString(imgIn);;
   fprintf(imgOut, "%s ", Scol);
   int col = atoi(Scol);
   free(Scol);
@@ -47,7 +65,6 @@ int main(int agrc, char* argv[]) {
   char* maxRgb = getString(imgIn);
   fprintf(imgOut, "%s\n", maxRgb);
   free(maxRgb);
-
 
   char* matrix[lin][col];
   for(int i = 0; i < lin; i++) {

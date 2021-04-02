@@ -4,6 +4,13 @@
 
 #define MAXSTR 12
 
+int number(char* str) {
+  for(int i = 0; *(str+i) != '\0'; i++) {
+    if (!(*(str+i) >= '0' && *(str+i) <= '9')) return -1;
+  }
+  return atoi(str);
+}
+
 void readEOL(FILE* f) {
   char buff;
   do {
@@ -41,13 +48,43 @@ char* add(char* buff, char* color, char* maxRgb) {
   return str;
 }
 
-int main(int agrc, char* argv[]) {
+int main(int argc, char* argv[]) {
   char* r = *(argv+1); char* g = *(argv+2); char* b = *(argv+3);
 
   FILE* imgIn; FILE* imgOut;
-  imgIn = fopen(*(argv+4), "r"); imgOut = fopen(*(argv+5), "w");
-  if (imgIn == NULL) {
-    fprintf(imgOut,"Ficheiro não encontrado: %s", *(argv+4));
+
+  if (argc > 6) {
+    printf("Uso indevido: %s <dR> <dG> <dB> [<ficheiro de entrada> [ficheiro de saida]]\n", *argv);
+    return 0;
+  }
+
+  if (argc > 5) {
+    imgOut = fopen(*(argv+5), "w");
+    if (imgOut == NULL) {
+      printf("Impossivel abrir o ficheiro para escrita: %s\n", *(argv+5));
+      return 0;
+    }
+  }
+  else imgOut = stdout;
+
+  if (argc > 4) {
+    imgIn = fopen(*(argv+4), "r");
+    if (imgIn == NULL) {
+      printf("Ficheiro não encontrado: %s\n", *(argv+4));
+      return 0;
+    }
+  }
+  else imgIn = stdin;
+
+  if (argc > 3) {
+    char* r = *(argv+1); char* g = *(argv+2); char* b = *(argv+3);
+    if (number(r) == -1 || number(g) == -1 || number(b) == -1) {
+        printf("Uso indevido: %s <dR> <dG> <dB> [<ficheiro de entrada> [ficheiro de saida]]\n", *argv);
+        return 0;
+    }
+  }
+  else {
+    printf("Uso indevido: %s <dR> <dG> <dB> [<ficheiro de entrada> [ficheiro de saida]]\n", *argv);
     return 0;
   }
 
