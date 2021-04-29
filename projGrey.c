@@ -4,6 +4,12 @@
 
 #define MAXSTR 12
 
+typedef struct color {
+  int r;
+  int g;
+  int b;
+} COLOR;
+
 void readEOL(FILE* f) {
   char buff;
   do {
@@ -21,12 +27,24 @@ char* getString(FILE* f) {
   return buff;
 }
 
-char* convert(char* r, char* g, char* b) {
-  char* str = calloc(MAXSTR,sizeof(char));
-  int aux;
-  aux = (float) (atoi(r)*(0.2126f) + atoi(g)*(0.7152f) + atoi(b)*(0.0722f));
-  sprintf(str, "%d %d %d", aux, aux, aux);
-  return str;
+int getInt(FILE* f) {
+  char* buff = calloc(512,sizeof(char));
+  fscanf(f, "%s", buff);
+  while(*buff == '#') {
+    readEOL(f);
+    fscanf(f, "%s", buff);
+  }
+  for(int i = 0; *(buff+i) != '\0'; i++) {
+    if (!(*buff >= '0' && *buff <= '9')) {
+      fprintf(stderr, "O ficheiro de entrada não tem valores validos\n");
+      exit(0);
+    }
+  }
+  return atoi(buff);
+}
+
+int convert(int r, int g, int b) {
+  return (float) (r*(0.2126) + g*(0.7152) + b*(0.0722));
 }
 
 int main(int argc, char* argv[]) {
@@ -55,39 +73,37 @@ int main(int argc, char* argv[]) {
   }
   else imgIn = stdin;
 
-  char* rgb = getString(imgIn);
+  char* rgb = getString(imgIn); //P3
+  if (strcmp(rgb,"P3")) {
+    fprintf(stderr, "O ficheiro de entrada não tem valores validos\n");
+    return 0;
+  }
   fprintf(imgOut, "%s\n", rgb);
   free(rgb);
 
-  char* Scol = getString(imgIn);
-  fprintf(imgOut, "%s ", Scol);
-  int col = atoi(Scol);
-  free(Scol);
+  int col = getInt(imgIn);
+  fprintf(imgOut, "%d ", col);
 
-  char* Slin = getString(imgIn);
-  fprintf(imgOut, "%s\n", Slin);
-  int lin = atoi(Slin);
-  free(Slin);
+  int lin = getInt(imgIn);
+  fprintf(imgOut, "%d\n", lin);
 
-  char* maxRgb = getString(imgIn);
-  fprintf(imgOut, "%s\n", maxRgb);
-  free(maxRgb);
+  int maxRgb = getInt(imgIn);
+  fprintf(imgOut, "%d\n", maxRgb);
 
-  char* matrix[lin][col];
-
+  COLOR matrix[lin][col];
   for(int i = 0; i < lin; i++) {
     for(int j = 0; j < col; j++) {
-      char* r = getString(imgIn); char* g = getString(imgIn); char* b = getString(imgIn);
-      matrix[i][j] = convert(r,g,b);
-      free(r); free(g); free(b);
+      matrix[i][j].r = getInt(imgIn);
+      matrix[i][j].g = getInt(imgIn);
+      matrix[i][j].b = getInt(imgIn);
     }
   }
 
   for(int i = 0; i < lin; i++) {
     for(int j = 0; j < col; j++) {
       if (!(i == 0 && j == 0)) fprintf(imgOut, "\n");
-      fprintf(imgOut, "%s ", matrix[i][j]);
-      free(matrix[i][j]);
+      int aux = convert(matrix[i][j].r,matrix[i][j].g,matrix[i][j].b);
+      fprintf(imgOut, "%d %d %d", aux, aux, aux);
     }
   }
 
