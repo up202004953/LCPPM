@@ -4,8 +4,15 @@
 
 #define MAXSTR 12
 
+typedef struct color {
+  int r;
+  int g;
+  int b;
+} COLOR;
+
 int number(char* str) {
-  for(int i = 0; *(str+i) != '\0'; i++) {
+  if (!(*str == '+' || *str == '-' || (*str >= '0' && *str <= '9'))) return -1;
+  for(int i = 1; *(str+i) != '\0'; i++) {
     if (!(*(str+i) >= '0' && *(str+i) <= '9')) return -1;
   }
   return atoi(str);
@@ -28,28 +35,31 @@ char* getString(FILE* f) {
   return buff;
 }
 
-char* add(char* buff, char* color, char* maxRgb) {
-  char* str = malloc(3*sizeof(char));
-  char* Saux = malloc(3*sizeof(char));
-  int max = atoi(maxRgb); int aux;
+int getInt(FILE* f) {
+  char* buff = calloc(512,sizeof(char));
+  fscanf(f, "%s", buff);
+  while(*buff == '#') {
+    readEOL(f);
+    fscanf(f, "%s", buff);
+  }
+  for(int i = 0; *(buff+i) != '\0'; i++) {
+    if (!(*buff >= '0' && *buff <= '9')) {
+      fprintf(stderr, "O ficheiro de entrada não tem valores validos\n");
+      exit(0);
+    }
+  }
+  return atoi(buff);
+}
 
-  aux = atoi(buff) + atoi(color);
-  if (aux > max) {
-    sprintf(Saux,"%s", maxRgb);
-  }
-  else if (aux < 0) {
-    sprintf(Saux,"%d", 0);
-  }
-  else {
-    sprintf(Saux,"%d", aux);
-  }
-  strcat(str, Saux);
-
-  return str;
+int add(int num, int color, int maxRgb) {
+  int aux = num + color;
+  if (aux > maxRgb) return maxRgb;
+  else if (aux < 0) return 0;
+  else return aux;
 }
 
 int main(int argc, char* argv[]) {
-  char* r = *(argv+1); char* g = *(argv+2); char* b = *(argv+3);
+  int dr; int dg; int db;
 
   FILE* imgIn; FILE* imgOut;
 
@@ -77,8 +87,8 @@ int main(int argc, char* argv[]) {
   else imgIn = stdin;
 
   if (argc > 3) {
-    char* r = *(argv+1); char* g = *(argv+2); char* b = *(argv+3);
-    if (number(r) == -1 || number(g) == -1 || number(b) == -1) {
+    dr = number(*(argv+1)); dg = number(*(argv+2)); db = number(*(argv+3));
+    if (dr == -1 || dg == -1 || db == -1) {
         printf("Uso indevido: %s <dR> <dG> <dB> [<ficheiro de entrada> [ficheiro de saida]]\n", *argv);
         return 0;
     }
@@ -89,53 +99,41 @@ int main(int argc, char* argv[]) {
   }
 
   char* rgb = getString(imgIn);
+  if (strcmp(rgb,"P3")) {
+    fprintf(stderr, "O ficheiro de entrada não tem valores validos\n");
+    return 0;
+  }
   fprintf(imgOut, "%s\n", rgb);
   free(rgb);
 
-  char* Scol = getString(imgIn);
-  fprintf(imgOut, "%s ", Scol);
-  int col = atoi(Scol);
-  free(Scol);
+  int col = getInt(imgIn);
+  fprintf(imgOut, "%d ", col);
 
-  char* Slin = getString(imgIn);
-  fprintf(imgOut, "%s\n", Slin);
-  int lin = atoi(Slin);
-  free(Slin);
+  int lin = getInt(imgIn);
+  fprintf(imgOut, "%d\n", lin);
 
-  char* maxRgb = getString(imgIn);
-  fprintf(imgOut, "%s\n", maxRgb);
+  int maxRgb = getInt(imgIn);
+  fprintf(imgOut, "%d\n", maxRgb);
 
-  char* matrix[lin][col];
+  COLOR matrix[lin][col];
   for(int i = 0; i < lin; i++) {
     for(int j = 0; j < col; j++) {
-      matrix[i][j] = calloc(MAXSTR,sizeof(char));
-    }
-  }
-  char Scolor[MAXSTR];
-  char* color = malloc(3*sizeof(char));
-
-  for(int i = 0; i < lin; i++) {
-    for(int j = 0; j < col; j++) {
-      Scolor[0] = '\0';
-      color = getString(imgIn); strcpy(color,add(color,r,maxRgb));
-      strcat(Scolor, color); strcat(Scolor, " ");
-      color = getString(imgIn); strcpy(color,add(color,g,maxRgb));
-      strcat(Scolor, color); strcat(Scolor, " ");
-      color = getString(imgIn); strcpy(color,add(color,b,maxRgb));
-      strcat(Scolor, color);
-      strcpy(matrix[i][j],Scolor);
+      matrix[i][j].r = getInt(imgIn);
+      matrix[i][j].g = getInt(imgIn);
+      matrix[i][j].b = getInt(imgIn);
     }
   }
 
   for(int i = 0; i < lin; i++) {
     for(int j = 0; j < col; j++) {
       if (!(i == 0 && j == 0)) fprintf(imgOut, "\n");
-      fprintf(imgOut, "%s ", matrix[i][j]);
-      free(matrix[i][j]);
+      fprintf(imgOut, "%d %d %d",
+              add(matrix[i][j].r,dr,maxRgb),
+              add(matrix[i][j].g,dg,maxRgb),
+              add(matrix[i][j].b,db,maxRgb));
     }
   }
 
-  free(maxRgb);
   fclose(imgIn); fclose(imgOut);
   return 0;
 }
