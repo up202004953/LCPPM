@@ -4,6 +4,12 @@
 
 #define MAXSTR 12
 
+typedef struct color {
+  int r;
+  int g;
+  int b;
+} COLOR;
+
 int number(char* str) {
   for(int i = 0; *(str+i) != '\0'; i++) {
     if (!(*(str+i) >= '0' && *(str+i) <= '9')) return -1;
@@ -28,21 +34,21 @@ char* getString(FILE* f) {
   return buff;
 }
 
-int convert(char* r, char* g, char* b) {
-  return (atoi(r)*(0.2126f) + atoi(g)*(0.7152f) + atoi(b)*(0.0722f));
+int getInt(FILE* f) {
+  char* buff = getString(f);
+  for(int i = 0; *(buff+i) != '\0'; i++) {
+    if (!(*buff >= '0' && *buff <= '9')) {
+      fprintf(stderr, "O ficheiro de entrada não tem valores validos\n");
+      exit(0);
+    }
+  }
+  return atoi(buff);
 }
 
-
-char* convertBW(char* r, char* g, char* b, int thresh, int maxRgb) {
-  char* str = calloc(MAXSTR,sizeof(char));
-  int aux = convert(r,g,b);
-  if (aux > thresh) {
-    sprintf(str, "%d %d %d", maxRgb, maxRgb, maxRgb);
-  }
-  else {
-    sprintf(str, "0 0 0");
-  }
-  return str;
+int convert(int r, int g, int b, int thresh, int maxRgb) {
+  int aux = (float) (r*(0.2126) + g*(0.7152) + b*(0.0722));
+  if (aux > thresh) return maxRgb;
+  return 0;
 }
 
 int main(int argc, char* argv[]) {
@@ -73,48 +79,48 @@ int main(int argc, char* argv[]) {
   else imgIn = stdin;
 
   if (argc > 1) {
-    int thresh = number(*(argv+1));
+    thresh = number(*(argv+1));
     if (thresh == -1) {
-        printf("Uso indevido: %s <limite> [<ficheiro de entrada> [ficheiro de saida]]\n", *argv);
-        return 0;
+      fprintf(stderr, "O ficheiro de entrada não tem valores validos\n");
+      return 0;
     }
   }
   else {
     printf("Uso indevido: %s <limite> [<ficheiro de entrada> [ficheiro de saida]]\n", *argv);
     return 0;
   }
+
   char* rgb = getString(imgIn);
+  if (strcmp(rgb,"P3")) {
+    fprintf(stderr, "O ficheiro de entrada não tem valores validos\n");
+    return 0;
+  }
   fprintf(imgOut, "%s\n", rgb);
   free(rgb);
 
-  char* Scol = getString(imgIn);
-  fprintf(imgOut, "%s ", Scol);
-  int col = atoi(Scol);
-  free(Scol);
+  int col = getInt(imgIn);
+  fprintf(imgOut, "%d ", col);
 
-  char* Slin = getString(imgIn);
-  fprintf(imgOut, "%s\n", Slin);
-  int lin = atoi(Slin);
-  free(Slin);
+  int lin = getInt(imgIn);
+  fprintf(imgOut, "%d\n", lin);
 
-  char* maxRgb = getString(imgIn);
-  fprintf(imgOut, "%s\n", maxRgb);
+  int maxRgb = getInt(imgIn);
+  fprintf(imgOut, "%d\n", maxRgb);
 
-  char* matrix[lin][col];
-
+  COLOR matrix[lin][col];
   for(int i = 0; i < lin; i++) {
     for(int j = 0; j < col; j++) {
-      char* r = getString(imgIn); char* g = getString(imgIn); char* b = getString(imgIn);
-      matrix[i][j] = convertBW(r,g,b,thresh,atoi(maxRgb));
-      free(r); free(g); free(b);
+      matrix[i][j].r = getInt(imgIn);
+      matrix[i][j].g = getInt(imgIn);
+      matrix[i][j].b = getInt(imgIn);
     }
   }
 
   for(int i = 0; i < lin; i++) {
     for(int j = 0; j < col; j++) {
       if (!(i == 0 && j == 0)) fprintf(imgOut, "\n");
-      fprintf(imgOut, "%s", matrix[i][j]);
-      free(matrix[i][j]);
+      int aux = convert(matrix[i][j].r, matrix[i][j].g, matrix[i][j].b, thresh, maxRgb);
+      fprintf(imgOut, "%d %d %d", aux, aux, aux);
     }
   }
 

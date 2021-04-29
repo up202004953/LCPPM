@@ -4,6 +4,12 @@
 
 #define MAXSTR 12
 
+typedef struct color {
+  int r;
+  int g;
+  int b;
+} COLOR;
+
 void readEOL(FILE* f) {
   char buff;
   do {
@@ -21,18 +27,28 @@ char* getString(FILE* f) {
   return buff;
 }
 
+int getInt(FILE* f) {
+  char* buff = getString(f);
+  for(int i = 0; *(buff+i) != '\0'; i++) {
+    if (!(*buff >= '0' && *buff <= '9')) {
+      fprintf(stderr, "O ficheiro de entrada não tem valores validos\n");
+      exit(0);
+    }
+  }
+  return atoi(buff);
+}
+
 int main(int argc, char* argv[]) {
   FILE* imgIn; FILE* imgOut;
-
   if (argc > 3) {
-    printf("Uso indevido: %s [<ficheiro de entrada> [ficheiro de saida]]\n", *argv);
+    fprintf(stderr, "Uso indevido: %s [<ficheiro de entrada> [ficheiro de saida]]\n", *argv);
     return 0;
   }
 
   if (argc > 2) {
     imgOut = fopen(*(argv+2), "w");
     if (imgOut == NULL) {
-      printf("Impossivel abrir o ficheiro para escrita: %s\n", *(argv+2));
+      fprintf(stderr, "Impossivel abrir o ficheiro para escrita: %s\n", *(argv+2));
       return 0;
     }
   }
@@ -41,54 +57,43 @@ int main(int argc, char* argv[]) {
   if (argc > 1) {
     imgIn = fopen(*(argv+1), "r");
     if (imgIn == NULL) {
-      printf("Ficheiro não encontrado: %s", *(argv+1));
+      fprintf(stderr, "Ficheiro não encontrado: %s\n", *(argv+1));
       return 0;
     }
   }
   else imgIn = stdin;
 
 
-  char* rgb = getString(imgIn);
+  char* rgb = getString(imgIn); //P3
+  if (strcmp(rgb,"P3")) {
+    fprintf(stderr, "O ficheiro de entrada não tem valores validos\n");
+    return 0;
+  }
   fprintf(imgOut, "%s\n", rgb);
   free(rgb);
 
-  char* Scol = getString(imgIn);;
-  fprintf(imgOut, "%s ", Scol);
-  int col = atoi(Scol);
-  free(Scol);
+  int col = getInt(imgIn);
+  fprintf(imgOut, "%d ", col);
 
-  char* Slin = getString(imgIn);
-  fprintf(imgOut, "%s\n", Slin);
-  int lin = atoi(Slin);
-  free(Slin);
+  int lin = getInt(imgIn);
+  fprintf(imgOut, "%d\n", lin);
 
-  char* maxRgb = getString(imgIn);
-  fprintf(imgOut, "%s\n", maxRgb);
-  free(maxRgb);
+  int maxRgb = getInt(imgIn);
+  fprintf(imgOut, "%d\n", maxRgb);
 
-  char* matrix[lin][col];
+  COLOR matrix[lin][col];
   for(int i = 0; i < lin; i++) {
     for(int j = 0; j < col; j++) {
-      matrix[i][j] = calloc(MAXSTR,sizeof(char));
-    }
-  }
-  char color[MAXSTR];
-
-  for(int i = 0; i < lin; i++) {
-    for(int j = 0; j < col; j++) {
-      color[0] = '\0';
-      strcat(color, getString(imgIn)); strcat(color, " ");
-      strcat(color, getString(imgIn)); strcat(color, " ");
-      strcat(color, getString(imgIn));
-      strcpy(matrix[i][j],color);
+      matrix[i][j].r = getInt(imgIn);
+      matrix[i][j].g = getInt(imgIn);
+      matrix[i][j].b = getInt(imgIn);
     }
   }
 
   for(int i = 0; i < lin; i++) {
     for(int j = col-1; j >= 0; j--) {
       if (!(i == 0 && j == col-1)) fprintf(imgOut, "\n");
-      fprintf(imgOut, "%s ", matrix[i][j]);
-      free(matrix[i][j]);
+      fprintf(imgOut, "%d %d %d", matrix[i][j].r, matrix[i][j].g, matrix[i][j].b);
     }
   }
 

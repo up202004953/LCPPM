@@ -36,12 +36,7 @@ char* getString(FILE* f) {
 }
 
 int getInt(FILE* f) {
-  char* buff = calloc(512,sizeof(char));
-  fscanf(f, "%s", buff);
-  while(*buff == '#') {
-    readEOL(f);
-    fscanf(f, "%s", buff);
-  }
+  char* buff = getString(f);
   for(int i = 0; *(buff+i) != '\0'; i++) {
     if (!(*buff >= '0' && *buff <= '9')) {
       fprintf(stderr, "O ficheiro de entrada não tem valores validos\n");
