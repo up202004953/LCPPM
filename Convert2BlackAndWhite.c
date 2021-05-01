@@ -46,7 +46,7 @@ int getInt(FILE* f) {
 }
 
 int convert(int r, int g, int b, int thresh, int maxRgb) {
-  int aux = (float) (r*(0.2126) + g*(0.7152) + b*(0.0722));
+  int aux = (float) (r*(0.2126) + g*(0.7152) + b*(0.0722) + 0.5);
   if (aux > thresh) return maxRgb;
   return 0;
 }

@@ -39,7 +39,7 @@ int getInt(FILE* f) {
 }
 
 int convert(int r, int g, int b) {
-  return (float) (r*(0.2126) + g*(0.7152) + b*(0.0722));
+  return (float) (r*(0.2126) + g*(0.7152) + b*(0.0722) + 0.5);
 }
 
 int main(int argc, char* argv[]) {
