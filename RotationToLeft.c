@@ -89,9 +89,9 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  for(int j = 0; j < col; j++) {
+  for(int j = col-1; j >= 0; j--) {
     for(int i = 0; i < lin; i++) {
-      if (!(i == 0 && j == 0)) fprintf(imgOut, "\n");
+      if (!(i == 0 && j == col-1)) fprintf(imgOut, "\n");
       fprintf(imgOut, "%d %d %d", matrix[i][j].r, matrix[i][j].g, matrix[i][j].b);
     }
   }
