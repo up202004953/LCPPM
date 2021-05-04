@@ -99,18 +99,18 @@ int main(int argc, char* argv[]) {
   fprintf(imgOut, "%s\n", rgb);
   free(rgb);
 
-  int col = getInt(imgIn);
+  int col = getInt(imgIn) + 2*np;
   fprintf(imgOut, "%d ", col);
 
-  int lin = getInt(imgIn);
+  int lin = getInt(imgIn) + 2*np;
   fprintf(imgOut, "%d\n", lin);
 
   int maxRgb = getInt(imgIn);
   fprintf(imgOut, "%d\n", maxRgb);
 
   COLOR matrix[lin][col];
-  for(int i = 0; i < lin; i++) {
-    for(int j = 0; j < col; j++) {
+  for(int i = np; i < lin-np; i++) {
+    for(int j = np; j < col-np; j++) {
       matrix[i][j].r = getInt(imgIn);
       matrix[i][j].g = getInt(imgIn);
       matrix[i][j].b = getInt(imgIn);
@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
       else fprintf(imgOut, "%d %d %d", matrix[i][j].r, matrix[i][j].g, matrix[i][j].b);
     }
   }
-
+  fprintf(imgOut, "\n");
   fclose(imgIn); fclose(imgOut);
   return 0;
 }
